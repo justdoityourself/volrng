@@ -40,10 +40,10 @@ namespace volrng
 				hvhd = nullptr;
 			}
 
-			VHD(string_view vhd_file, string_view drive_letter) :
+			VHD(string_view vhd_file, string_view drive_letter,bool no_attach = false) :
 				hvhd(NULL)
 			{
-				Open(vhd_file, drive_letter);
+				Open(vhd_file, drive_letter,no_attach);
 				Path();
 
 				if (drive_letter.size())
@@ -91,7 +91,7 @@ namespace volrng
 
 			static void Dismount(string_view path_and_file)
 			{
-				VHD vhd(path_and_file, "");
+				VHD vhd(path_and_file, "",true);
 			}
 
 		protected:
@@ -113,15 +113,14 @@ namespace volrng
 				auto result = CreateVirtualDisk(&vst, to_wide(path_and_file).c_str(), mask, NULL, CREATE_VIRTUAL_DISK_FLAG_NONE, 0, &params, NULL, &hvhd);
 
 				if(result != ERROR_SUCCESS || hvhd == nullptr || hvhd == INVALID_HANDLE_VALUE)
-					throw std::runtime_error("Failed to create VHD");
+					throw std::runtime_error("Failed to create VHD " + to_string(result));
 
 				CloseHandle(hvhd);
 				hvhd = INVALID_HANDLE_VALUE;
 			}
 
-			void Open(string_view file, string_view letter)
+			void Open(string_view file, string_view letter,bool no_attach = false)
 			{
-
 				OPEN_VIRTUAL_DISK_PARAMETERS oparams;
 				ATTACH_VIRTUAL_DISK_PARAMETERS iparams;
 				VIRTUAL_STORAGE_TYPE vst = { VIRTUAL_STORAGE_TYPE_DEVICE_VHD, VIRTUAL_STORAGE_TYPE_VENDOR_MICROSOFT };
@@ -134,9 +133,10 @@ namespace volrng
 				auto result = OpenVirtualDisk(&vst, to_wide(file).c_str(), VIRTUAL_DISK_ACCESS_ATTACH_RW | VIRTUAL_DISK_ACCESS_GET_INFO | VIRTUAL_DISK_ACCESS_DETACH | VIRTUAL_DISK_ACCESS_ALL, OPEN_VIRTUAL_DISK_FLAG_NONE, &oparams, &hvhd);
 
 				if (result != ERROR_SUCCESS || hvhd == nullptr || hvhd == INVALID_HANDLE_VALUE)
-					throw std::runtime_error("Failed to open VHD");
+					throw std::runtime_error("Failed to open VHD " + to_string(result));
 
-				Attach();
+				if(!no_attach)
+					Attach();
 			}
 
 			void Attach()
@@ -147,7 +147,7 @@ namespace volrng
 				auto result = AttachVirtualDisk(hvhd, NULL, ATTACH_VIRTUAL_DISK_FLAG_PERMANENT_LIFETIME, 0, &iparams, NULL);
 
 				if (result != ERROR_SUCCESS)
-					throw std::runtime_error("Failed to attach VHD");
+					throw std::runtime_error("Failed to attach VHD " + to_string(result));
 			}
 
 			void Path()
@@ -158,7 +158,7 @@ namespace volrng
 				auto result = GetVirtualDiskPhysicalPath(hvhd, &size, tmp);
 
 				if (result != ERROR_SUCCESS)
-					throw std::runtime_error("Failed to read VHD path");
+					throw std::runtime_error("Failed to read VHD path " + to_string(result));
 
 				path = to_narrow(tmp);
 				id = path.back();
@@ -169,7 +169,7 @@ namespace volrng
 				auto result = DetachVirtualDisk(hvhd, DETACH_VIRTUAL_DISK_FLAG_NONE, 0);
 
 				if (result != ERROR_SUCCESS)
-					throw std::runtime_error("Failed to detach VHD");
+					throw std::runtime_error("Failed to detach VHD " + to_string(result));
 			}
 
 			void Mount(string_view disknumber, string_view driveletter)

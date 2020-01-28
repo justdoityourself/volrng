@@ -24,6 +24,7 @@ int main(int argc, char* argv[])
 
 #include <string>
 #include <iostream>
+#include <filesystem>
 
 using namespace clipp;
 
@@ -44,30 +45,61 @@ using namespace volrng::win;
 int main(int argc, char* argv[])
 {
     bool mount = false, dismount = false, step = false, validate = false;
-    string path = "", param = "";
+    string path = "test", param = MOUNT;
+    int size = 1;
 
     auto cli = (
-        value("test directory", path),
-        opt_value("parameter", param),
-        option("-m", "--mount").set(mount).doc("encryption password"),
-        option("-s", "--step").set(step).doc("encode regenerating file"),
-        option("-v", "--validate").set(step).doc("encode regenerating file"),
-        option("-d", "--dismount").set(dismount).doc("encode regenerating file")
+        opt_value("test directory", path),
+        opt_value("path", param),
+        opt_value("size", size),
+        option("-m", "--mount").set(mount).doc("Mount the test volume ( path )"),
+        option("-s", "--step").set(step).doc("Mutate the test data"),
+        option("-v", "--validate").set(validate).doc("Validate test metadata against path ( path )"),
+        option("-d", "--dismount").set(dismount).doc("Dismount the test data")
         );
 
-    if (!parse(argc, argv, cli)) cout << make_man_page(cli, argv[0]);
-    else
+    try 
     {
-        volrng::volume::Test<DISK> handle(path);
+        if (!parse(argc, argv, cli)) cout << make_man_page(cli, argv[0]);
+        else
+        {
+            filesystem::create_directories(path);
+            volrng::volume::Test<DISK> handle(path);
 
-        if (mount)
-            handle.Mount(param);
-        else if (dismount)
-            handle.Dismount();
-        else if (validate)
-            handle.Validate(param);
-        else if (step)
-            handle.Run(1*1024*1024,param);
+            if (mount)
+            {
+                cout << "--mount " << path << " " << param << endl;
+                handle.Mount(param);
+                cout << "success" << endl;
+            }
+            else if (dismount)
+            {
+                cout << "--dismount " << path << endl;
+                handle.Dismount();
+                cout << "success" << endl;
+            }
+            else if (validate)
+            {
+                cout << "--validate " << path << " " << param << endl;
+                if (handle.Validate(param))
+                    cout << "Point in Time Valid" << endl;
+                else
+                    cout << "Point in Time INVALID" << endl;
+            }
+            else if (step)
+            {
+                cout << "--step " << path << " " << param << " " << size << "mb" << endl;
+                handle.Run(size * 1024 * 1024, param);
+                cout << "success" << endl;
+            }
+            else
+                cout << make_man_page(cli, argv[0]);
+        }
+    }
+    catch (const exception & ex) 
+    {
+        cerr << ex.what() << endl;
+        return -1;
     }
 
     return 0;
