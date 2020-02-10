@@ -24,8 +24,8 @@ namespace volrng
 			RandomPath(string_view _root)
 				: root(_root)
 			{
-				for (size_t i = 0; i < S; i++)
-					data[i] = /*util::Flip() ? 0 :*/ util::Random();
+				for (size_t i = 1; i < S; i++)
+					data[i] = util::Flip() ? 0 : util::Random();
 			}
 
 			seed Seed() { return data; }
@@ -37,7 +37,7 @@ namespace volrng
 				auto result = Build();
 
 				for (size_t i = 0; i < S; i++)
-					data[i] = /*util::Flip() ? data[i] : (util::Flip() ? 0 :*/ util::Random();//);
+					data[i] = util::Flip() ? data[i] : (util::Flip() ? 0 : util::Random());
 
 				data[S - 1] = util::Random();
 
@@ -64,8 +64,8 @@ namespace volrng
 
 				for (size_t i = 0; i < S; i++)
 				{
-					if (--c == 0) break;
 					if (!data[i]) continue;
+					if (--c == 0) break;
 
 					result += '\\' + to_string(data[i]);
 				}
@@ -88,7 +88,7 @@ namespace volrng
 				}
 
 				if(!c)
-					result += '\\' + to_string(Random());
+					result += '\\' + to_string(util::Random());
 
 				return result;
 			}

@@ -43,10 +43,12 @@ namespace volrng
 				New(size,mount);
 			}
 
-			void Mount(string_view mount)
+			string Mount(string_view mount)
 			{
 				DISK disk(string(root) + "/disk.img", mount);
 				disk.Release();
+
+				return disk.Device();
 			}
 
 			void Dismount()

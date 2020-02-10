@@ -69,7 +69,7 @@ namespace volrng
 				if (!file_map.size())
 					return Allocate();
 
-				auto dx = Random(file_map.size() / sizeof(BlockRecord));
+				auto dx = util::Random(file_map.size() / sizeof(BlockRecord));
 
 				auto* r = (BlockRecord*)file_map.data();
 				r += dx;

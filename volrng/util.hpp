@@ -16,8 +16,11 @@
 #include <chrono>
 
 #include "../mio.hpp"
-#include "../picosha2.hpp"
 #include "../gsl-lite.hpp"
+
+//Picosha is slow slow slow, but you can uncomment it if you don't have cryptopp set up.
+//#include "../picosha2.hpp"
+#include "cryptopp/sha.h"
 
 using namespace std;
 using namespace gsl;
@@ -39,7 +42,8 @@ namespace volrng
 		void id_file(string_view name, file_id& hash)
 		{
 			mio::mmap_source file(name);
-			picosha2::hash256(file.begin(), file.end(), hash.begin(), hash.end());
+			CryptoPP::SHA256().CalculateDigest(hash.data(), (const CryptoPP::byte*) file.data(), file.size());
+			//picosha2::hash256(file.begin(), file.end(), hash.begin(), hash.end());
 		}
 
 		size_t Random(size_t max = -1)
@@ -53,7 +57,7 @@ namespace volrng
 			return result % max;
 		}
 
-		bool Flip() { return (bool)(Random() % 2); }
+		bool Flip() { return (Random() % 2) == 0; }
 
 		template < typename T > vector<T> RandomVector(size_t size)
 		{
@@ -68,7 +72,8 @@ namespace volrng
 			return result;
 		}
 
-		template < typename T > void FactorExpand(const span<T>& poly, span<T> output)
+		//Original from d88::factor
+		/*template < typename T > void FactorExpand(const span<T>& poly, span<T> output)
 		{
 			auto const u = poly.size();
 			vector<T> l(u + output.size());
@@ -88,6 +93,35 @@ namespace volrng
 				l[u + i - 1] = sum;
 				output[i] = sum;
 			}
+		}*/
+
+		//Performance consideration, limit length to 16 iterations
+		template < typename T > void FactorExpand(const span<T>& poly, span<T> output)
+		{
+			auto const u = poly.size();
+			vector<T> l(u + output.size());
+
+			for (size_t i = 0; i < u - 2; i++)
+				l[i] = 0;
+
+			l[u - 2] = 1;
+
+			for (size_t i = 0; i < output.size(); i++)
+			{
+				if (i >= 16)
+				{
+					output[i] = 0;
+					continue;
+				}
+
+				size_t sum = 0;
+
+				for (size_t j = 0, k = u - 1; j < u - 1; j++, k--)
+					sum += poly[k] * l[i + j];
+
+				l[u + i - 1] = sum;
+				output[i] = sum;
+			}
 		}
 
 		constexpr size_t _mb(size_t s) { return s * 1024 * 1024; }
@@ -96,14 +130,22 @@ namespace volrng
 
 		wstring to_wide(string_view s)
 		{
-			wstring_convert<codecvt_utf8_utf16<wchar_t>> converter;
-			return converter.from_bytes(string(s));
+			//This Method, is so slow and uses thread locks
+			//std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+			//return converter.from_bytes(string(s));
+
+			//Back to the basics, no good deed unpunished.
+			return std::wstring(s.begin(), s.end());
 		}
 
 		string to_narrow(wstring_view s)
 		{
-			wstring_convert<codecvt_utf8_utf16<wchar_t>> converter;
-			return converter.to_bytes(wstring(s));
+			//This Method, is so slow and uses thread locks
+			//std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+			//return converter.to_bytes(wstring(s));
+
+			//Back to the basics, no good deed unpunished.
+			return std::string(s.begin(), s.end());
 		}
 
 		void string_as_file(string_view file,string_view data)

@@ -79,7 +79,7 @@ namespace volrng
 				hvhd = nullptr;
 			}
 
-			string PhysicalString()
+			string Device()
 			{
 				return string("\\\\.\\PhysicalDrive" + id);
 			}
