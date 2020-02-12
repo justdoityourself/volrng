@@ -150,6 +150,7 @@ namespace volrng
 			void New(uint64_t size, string_view mount)
 			{
 				DISK disk(string(root) + "/disk.img", _gb(50), mount);
+				std::this_thread::sleep_for(std::chrono::milliseconds(3000));
 
 				float small_r = 0.55f, medium_r = 0.25f, large_r = 0.2f;
 				auto n = now();

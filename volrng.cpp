@@ -46,12 +46,12 @@ int main(int argc, char* argv[])
 {
     bool mount = false, dismount = false, step = false, validate = false;
     string path = "test", param = MOUNT;
-    int size = 1;
+    uint64_t size = 1;
 
     auto cli = (
-        opt_value("test directory", path),
-        opt_value("path", param),
-        opt_value("size", size),
+        option("-p", "--path").doc("Path where the vhd is stored") & value("directory", path),
+        option("-l", "--letter").doc("Drive letter to mount vhd") & value("drive letter", param),
+        option("-z", "--size").doc("Path where the vhd is stored") & value("size", size),
         option("-m", "--mount").set(mount).doc("Mount the test volume ( path )"),
         option("-s", "--step").set(step).doc("Mutate the test data"),
         option("-v", "--validate").set(validate).doc("Validate test metadata against path ( path )"),
@@ -60,7 +60,8 @@ int main(int argc, char* argv[])
 
     try 
     {
-        if (!parse(argc, argv, cli)) cout << make_man_page(cli, argv[0]);
+        if (!parse(argc, argv, cli))
+            cout << make_man_page(cli, argv[0]);
         else
         {
             filesystem::create_directories(path);
@@ -88,6 +89,8 @@ int main(int argc, char* argv[])
             }
             else if (step)
             {
+                handle.Dismount();
+
                 cout << "--step " << path << " " << param << " " << size << "mb" << endl;
                 handle.Run(size * 1024 * 1024, param);
                 cout << "success" << endl;

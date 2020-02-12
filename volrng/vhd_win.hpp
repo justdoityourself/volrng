@@ -40,27 +40,47 @@ namespace volrng
 				hvhd = nullptr;
 			}
 
-			VHD(string_view vhd_file, string_view drive_letter,bool no_attach = false) :
-				hvhd(NULL)
+			VHD(string_view vhd_file, string_view drive_letter,bool no_attach = false) 
+				: hvhd(NULL)
 			{
-				Open(vhd_file, drive_letter,no_attach);
-				Path();
+				try
+				{
+					Open(vhd_file, drive_letter, no_attach);
+					Path();
 
-				if (drive_letter.size())
-					Mount(id, drive_letter);
+					if (drive_letter.size())
+						Mount(id, drive_letter);
+				}
+				catch (...)
+				{
+					Release();
+					throw;
+				}
 			}
 
-			VHD(string_view vhd_file, unsigned long long length_bytes, string_view drive_letter) :
-				hvhd(NULL)
+			VHD(string_view vhd_file, unsigned long long length_bytes, string_view drive_letter) 
+				: hvhd(NULL)
 			{
-				if(!filesystem::exists(vhd_file))
-					Create(vhd_file, length_bytes);
-				Open(vhd_file, drive_letter);
+				try
+				{
+					bool created = false;
+					if (!filesystem::exists(vhd_file))
+					{
+						Create(vhd_file, length_bytes);
+						created = true;
+					}
+					Open(vhd_file, drive_letter);
 
-				Path();
+					Path();
 
-				if (drive_letter.size())
-					Partition(id, drive_letter);
+					if (created && drive_letter.size())
+						Partition(id, drive_letter);
+				}
+				catch (...)
+				{
+					Release();
+					throw;
+				}
 			}
 
 			~VHD()
@@ -75,8 +95,11 @@ namespace volrng
 
 			void Release()
 			{
-				CloseHandle(hvhd);
-				hvhd = nullptr;
+				if (hvhd)
+				{
+					CloseHandle(hvhd);
+					hvhd = nullptr;
+				}
 			}
 
 			string Device()
@@ -91,7 +114,11 @@ namespace volrng
 
 			static void Dismount(string_view path_and_file)
 			{
-				VHD vhd(path_and_file, "",true);
+				try
+				{
+					VHD vhd(path_and_file, "", true);
+				}
+				catch (...) {} //File exists but wasn't , mounted
 			}
 
 		protected:
