@@ -28,24 +28,14 @@ int main(int argc, char* argv[])
 
 using namespace clipp;
 
-#ifdef _WIN32
-
-#include "volrng/vhd_win.hpp"
-
-using namespace volrng::win;
-
-#define DISK VHD
-#define MOUNT "Z:"
-
-#endif
-
+#include "volrng/compat.hpp"
 #include "volrng/volume.hpp"
 
 
 int main(int argc, char* argv[])
 {
     bool mount = false, dismount = false, step = false, validate = false;
-    string path = "test", param = MOUNT;
+    string path = "test", param = volrng::MOUNT;
     uint64_t size = 1;
 
     auto cli = (
@@ -65,7 +55,7 @@ int main(int argc, char* argv[])
         else
         {
             filesystem::create_directories(path);
-            volrng::volume::Test<DISK> handle(path);
+            volrng::volume::Test<volrng::DISK> handle(path);
 
             if (mount)
             {

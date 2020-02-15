@@ -56,6 +56,9 @@
     <ClInclude Include="volrng\random_path.hpp">
       <Filter>volrng</Filter>
     </ClInclude>
+    <ClInclude Include="volrng\compat.hpp">
+      <Filter>volrng</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />

@@ -228,6 +228,7 @@
     <ClInclude Include="mio.hpp" />
     <ClInclude Include="picosha2.hpp" />
     <ClInclude Include="volrng\block_db.hpp" />
+    <ClInclude Include="volrng\compat.hpp" />
     <ClInclude Include="volrng\linux.hpp" />
     <ClInclude Include="volrng\random_path.hpp" />
     <ClInclude Include="volrng\test.hpp" />
