@@ -16,8 +16,6 @@
 
 #include "../mio.hpp"
 
-using namespace std;
-
 namespace volrng
 {
 	using namespace util;
@@ -26,6 +24,8 @@ namespace volrng
 
 	namespace volume
 	{
+		using namespace std;
+
 		template <typename DISK, size_t S = _kb(256),size_t D = _gb(50), size_t P = 5> class Test
 		{
 			string root;
