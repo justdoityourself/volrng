@@ -8,9 +8,7 @@
 #include <fstream>
 #include <filesystem>
 
-#include "util.hpp"
-
-using namespace std;
+#include "d8u/util.hpp"
 
 #include "../mio.hpp"
 
@@ -18,6 +16,8 @@ namespace volrng
 {
 	namespace blocks
 	{
+		using namespace std;
+
 		typedef vector<uint8_t> block;
 		template <size_t S> class Database
 		{

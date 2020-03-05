@@ -13,13 +13,14 @@
 #include <virtdisk.h>
 #pragma comment(lib, "VirtDisk.lib")
 
-#include "util.hpp"
+#include "d8u/util.hpp"
 
-using namespace std;
+
 
 namespace volrng
 {
-	using namespace util;
+	using namespace d8u::util;
+	using namespace std;
 
 	namespace win
 	{

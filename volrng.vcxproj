@@ -232,7 +232,6 @@
     <ClInclude Include="volrng\linux.hpp" />
     <ClInclude Include="volrng\random_path.hpp" />
     <ClInclude Include="volrng\test.hpp" />
-    <ClInclude Include="volrng\util.hpp" />
     <ClInclude Include="volrng\vhd_win.hpp" />
     <ClInclude Include="volrng\volume.hpp" />
   </ItemGroup>

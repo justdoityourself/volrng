@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include <string>
+#include <string_view>
 
 
 
@@ -13,7 +13,8 @@
 namespace volrng
 {
 	typedef volrng::win::VHD DISK;
-	std::string MOUNT("Z:");
+	std::string_view MOUNT("Z:");
+	std::string_view MOUNT2("Y:");
 }
 
 #endif

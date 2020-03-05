@@ -6,14 +6,14 @@
 #include <array>
 #include <string_view>
 
-#include "util.hpp"
-
-using namespace std;
+#include "d8u/util.hpp"
 
 namespace volrng
 {
 	namespace path
 	{
+		using namespace std;
+
 		template <size_t S, typename U = uint64_t> class RandomPath
 		{
 			string root;

@@ -10,7 +10,7 @@
 #include <map>
 #include <array>
 
-#include "util.hpp"
+#include "d8u/util.hpp"
 #include "block_db.hpp"
 #include "random_path.hpp"
 
@@ -18,7 +18,7 @@
 
 namespace volrng
 {
-	using namespace util;
+	using namespace d8u::util;
 	using namespace blocks;
 	using namespace path;
 
@@ -40,7 +40,10 @@ namespace volrng
 
 			void Run(uint64_t size, string_view mount)
 			{
-				New(size,mount);
+				if (!std::filesystem::exists(string(root) + "/disk.img"))
+					New(size, mount);
+				else
+					Iterate(size, mount);
 			}
 
 			string Mount(string_view mount)
@@ -70,7 +73,7 @@ namespace volrng
 				}
 
 				{
-					ifstream meta(root + "\\latest", ios::binary);
+					ifstream meta(root + '\\' + n + ".meta", ios::binary);
 					meta >> ss;
 					meta >> ms;
 					meta >> ls;
@@ -123,30 +126,6 @@ namespace volrng
 				id_file(file, id);
 			}
 
-			/*void ModifyTestFile(string_view file, uint64_t size, file_id& id)
-			{
-				{
-					//append one block modify one block
-					ofstream file_handle(file, ios::out | ios::binary);
-				}
-
-				unsigned long long file_size = file_handle.FileSize();
-				unsigned long long offset = 0;
-				if (file_size)
-					offset = (rand() * _kb(10)) % file_size;
-
-				exBuffer buffer;
-				buffer.resize(size);
-				AllocateBlock(buffer, true);
-
-				modified_bytes += size;
-
-				file_handle.Seek(offset);
-				file_handle.Write(buffer);
-
-				id_file(file, id);
-			}*/
-
 			void New(uint64_t size, string_view mount)
 			{
 				DISK disk(string(root) + "/disk.img", _gb(50), mount);
@@ -157,11 +136,6 @@ namespace volrng
 
 				ofstream db(root + '\\' + n + ".db", ofstream::binary);
 				ofstream meta(root + '\\' + n + ".meta", ofstream::binary);
-
-				{
-					ofstream lf(root + "\\latest");
-					lf << n;
-				}
 
 				uint64_t small_file_size = size * small_r;
 				uint64_t medium_file_size = size * medium_r;
@@ -176,284 +150,140 @@ namespace volrng
 				uint64_t dup = 0;
 
 				while (large_file_size)
+					file_core(pathrng, db, small_file_size, medium_file_size, large_file_size, dup);
+
+				meta << ss << endl;
+				meta << ms << endl;
+				meta << ls << endl;
+				meta << dup << endl;
+
 				{
-					auto seed = pathrng.Seed();
-					auto path = pathrng.Path();
-					auto file = pathrng.Iterate();
-					filesystem::create_directories(path);
-
-					auto step = [](auto& s, auto t)
-					{
-						uint64_t size = Random(t);
-						if (size > s)
-							size = s;
-						s -= size;
-
-						return size;
-					};
-
-					uint64_t size;
-					if (small_file_size) size = step(small_file_size, S);
-					else if (medium_file_size) size = step(medium_file_size, S * 10);
-					else if (large_file_size) size = step(large_file_size, S * 100);
-
-					file_id id;
-
-					CreateFile(file, size, id, dup);
-
-					db.write((const char*)seed.data(),sizeof(seed));
-					db.write((const char*)id.data(), sizeof(id));
+					ofstream lf(root + "\\latest");
+					lf << n;
 				}
-
-				meta << ss;
-				meta << ms;
-				meta << ls;
-				meta << dup;
 			}
 
-		//	void IterateDisk(unsigned long long size, unsigned long long modified_bytes, float small_r = 0.65f, float medium_r = 0.25f, float large_r = 0.1f)
-		//	{
-		//		string path_to_disk;
-		//		path_to_disk = working_directory;
-		//		path_to_disk += id.AsString();
-		//		path_to_disk += L"\\";
-		//		exBuffer filename_record;
+			void Iterate(uint64_t size, string_view mount)
+			{
+				DISK disk(string(root) + "/disk.img", _gb(50), mount);
+				std::this_thread::sleep_for(std::chrono::milliseconds(3000));
 
-		//		exFile::MakePath(path_to_disk);
+				float small_r = 0.55f, medium_r = 0.25f, large_r = 0.2f;
+				auto n = now();
 
-		//		exFile history_file(EXS(path_to_disk, ex_int_to_string(iteration), L"_history.db"));
-		//		exBuffer existing_files;
-		//		existing_files.FromFile(EXS(path_to_disk, L"file.db"));
-		//		vector < wchar_t* > filename_strings;
-		//		existing_files.stringrray(filename_strings);
-		//		exFile files_file(EXS(path_to_disk, ex_int_to_string(iteration), L"_files.db"));
-		//		history_file.End();
-		//		files_file.End();
+				string _n;
+				uint64_t ss;
+				uint64_t ms;
+				uint64_t ls;
+				uint64_t dup;
 
-		//		exBuffer modified_files;
+				{
+					ifstream lf(root + "\\latest");
+					lf >> _n;
+				}
 
-		//		unsigned long long actual_modified = 0;
+				{
+					ifstream meta(root + '\\' + _n + ".meta", ios::binary);
+					meta >> ss;
+					meta >> ms;
+					meta >> ls;
+					meta >> dup;
+				}
 
-		//		unsigned int progress_bondary = 10;
+				std::filesystem::copy_file(root + '\\' + _n + ".db", root + '\\' + n + ".db");
 
-		//		while (false /*modified_bytes*/)
-		//		{
-		//			unsigned long long size;
-		//			string_view path_and_file, ssize;
-		//			string random_file;
-		//			random_file = filename_strings[rand() % filename_strings.size()];
-		//			string_view s = random_file;
+				mio::mmap_sink pdb(root + '\\' + n + ".db");
+				ofstream db(root + '\\' + n + ".db", ofstream::binary);
+				ofstream meta(root + '\\' + n + ".meta", ofstream::binary);
 
-		//			s.SplitForward(path_and_file, ssize, L':', true, 1);
-		//			ModifyTestFile(path_and_file, size, cid);
+				uint64_t small_file_size = size * small_r;
+				uint64_t medium_file_size = size * medium_r;
+				uint64_t large_file_size = size * large_r;
 
-		//			if (size > modified_bytes)
-		//				modified_bytes = 0;
-		//			else
-		//				modified_bytes -= size;
+				ss += size * small_r;
+				ms += size * medium_r;
+				ls += size * large_r;
 
-		//			if (exfilelist.find(random_file) == exfilelist.end())
-		//				modified_files += EXS(random_file, L":", ex_int_to_string(size), L":", id_ref.AsString());
+				RandomPath<P> pathrng(mount);
+				RandomPath<P> updaterng(mount);
 
-		//			actual_modified += size;
-		//		}
+				size_t i = 0;
+				while (large_file_size)
+				{
+					if (d8u::util::Flip() && d8u::util::Flip())
+						file_update(updaterng, i, (uint8_t*)pdb.data(), small_file_size, medium_file_size, large_file_size, dup);
+					else
+						file_core(pathrng, db, small_file_size, medium_file_size, large_file_size, dup);
+				}
 
-		//		unsigned long long small_file_size = size * small_r;
-		//		unsigned long long medium_file_size = size * medium_r;
-		//		unsigned long long large_file_size = size * large_r;
+				meta << ss << endl;
+				meta << ms << endl;
+				meta << ls << endl;
+				meta << dup << endl;
 
-		//		unsigned long long small_actual = 0;
-		//		unsigned long long medium_actual = 0;
-		//		unsigned long long large_actual = 0;
+				{
+					ofstream lf(root + "\\latest");
+					lf << n;
+				}
+			}
 
-		//		while (small_file_size || medium_file_size || large_file_size)
-		//		{
-		//			unsigned int directory_depth = rand() % 5;
+			void file_update(RandomPath<P>& updaterng, size_t & i, uint8_t* p, uint64_t& small_file_size, uint64_t& medium_file_size, uint64_t& large_file_size, uint64_t& dup)
+			{
+				auto pseed = (const RandomPath<P>::seed*)(p + i);
+				auto pid = (file_id*)(p + i + sizeof(RandomPath<P>::seed));
+				i += sizeof(file_id) + sizeof(RandomPath<P>::seed);
 
-		//			string path = drive_letter;
-		//			path += L":\\";
+				updaterng.SetSeed(*pseed);
+					
+				auto file = updaterng.File();
+				
+				auto step = [](auto& s, auto t)
+				{
+					uint64_t size = Random(t);
+					if (size > s)
+						size = s;
+					s -= size;
 
-		//			bool directory_excluded = ((rand() % 15) == 0);
-		//			bool first = true;
+					return size;
+				};
 
-		//			while (directory_depth)
-		//			{
-		//				path += ex_single < exEnglishWordsMinimal >().RandomEnglishWord();
-		//				path += L"\\";
-		//				ex_fatal(exFile::MakePath(path))
+				uint64_t size;
+				if (small_file_size) size = step(small_file_size, S);
+				else if (medium_file_size) size = step(medium_file_size, S * 10);
+				else if (large_file_size) size = step(large_file_size, S * 100);
 
-		//					if (directory_excluded)
-		//					{
-		//						excluded_directories++;
+				CreateFile(file, size, *pid, dup);
+			}
 
-		//						if (first == true)
-		//							exdirlist.push_back(path);
-		//					}
-		//				first = false;
+			void file_core(RandomPath<P> & pathrng, ofstream & db, uint64_t &small_file_size, uint64_t & medium_file_size ,uint64_t & large_file_size, uint64_t & dup)
+			{
+				auto seed = pathrng.Seed();
+				auto path = pathrng.Path();
+				auto file = pathrng.Iterate();
+				filesystem::create_directories(path);
 
-		//				unsigned int file_count = rand() % 3;
-		//				unsigned long long size;
-		//				if (directory_depth == 1)
-		//					file_count = rand() % 30;
+				auto step = [](auto& s, auto t)
+				{
+					uint64_t size = Random(t);
+					if (size > s)
+						size = s;
+					s -= size;
 
-		//				while (file_count)
-		//				{
-		//					string filename;
-		//					string justfile;
-		//					filename = path;
-		//					ex_random_filename(justfile);
-		//					filename += justfile;
-		//				retry:
-		//					if (small_file_size == 0 && medium_file_size == 0 && large_file_size == 0)
-		//						break;
+					return size;
+				};
 
-		//					switch (rand() % 3)
-		//					{
-		//					case 0:
-		//						if (!small_file_size)
-		//							goto retry;
+				uint64_t size;
+				if (small_file_size) size = step(small_file_size, S);
+				else if (medium_file_size) size = step(medium_file_size, S * 10);
+				else if (large_file_size) size = step(large_file_size, S * 100);
 
-		//						size = RandomFileSize(0);
-		//						if (size > small_file_size)
-		//							size = small_file_size;
+				file_id id;
 
-		//						CreateTestFile(filename, size, 0, cid);
+				CreateFile(file, size, id, dup);
 
-		//						if (size > small_file_size)
-		//							small_file_size = 0;
-		//						else
-		//							small_file_size -= size;
-		//						small_actual += size;
-
-		//						if (IsTypeExcluded(filename))
-		//						{
-		//							excluded_by_type++;
-		//							effective_excluded_files++;
-		//						}
-		//						else if (directory_excluded)
-		//						{
-		//							effective_excluded_files++;
-		//						}
-		//						else if ((rand() % 20) == 0)
-		//						{
-		//							excluded_files++;
-		//							effective_excluded_files++;
-		//							exfilelist[filename] = 1;
-		//						}
-		//						else
-		//						{
-		//							filename_record += EXS(filename, L":", ex_int_to_string(size), L":", id_ref.AsString());
-		//							current_snapshot_record[justfile] = std::pair < unsigned long long, unsigned long long >(size, 0);
-		//						}
-
-		//						ex_library_progress_handle.main.progress += size;
-
-		//						break;
-		//					case 1:
-
-		//						if (!medium_file_size)
-		//							goto retry;
-
-		//						size = RandomFileSize(1);
-		//						if (size > medium_file_size)
-		//							size = medium_file_size;
-
-		//						ex_fatal(CreateTestFile(filename, size, 1, cid))
-
-		//							if (size > medium_file_size)
-		//								medium_file_size = 0;
-		//							else
-		//								medium_file_size -= size;
-
-		//						medium_actual += size;
-
-		//						if (IsTypeExcluded(filename))
-		//						{
-		//							excluded_by_type++;
-		//							effective_excluded_files++;
-		//						}
-		//						else if (directory_excluded)
-		//						{
-		//							effective_excluded_files++;
-		//						}
-		//						else if ((rand() % 20) == 0)
-		//						{
-		//							excluded_files++;
-		//							effective_excluded_files++;
-		//							exfilelist[filename] = 1;
-		//						}
-		//						else
-		//						{
-		//							filename_record += EXS(filename, L":", ex_int_to_string(size), L":", id_ref.AsString());
-		//							current_snapshot_record[justfile] = std::pair < unsigned long long, unsigned long long >(size, 0);
-		//						}
-
-		//						ex_library_progress_handle.main.progress += size;
-
-		//						break;
-		//					case 2:
-		//						if (!large_file_size)
-		//							goto retry;
-
-		//						size = RandomFileSize(2);
-		//						if (size > large_file_size)
-		//							size = large_file_size;
-
-		//						ex_fatal(CreateTestFile(filename, size, 2, cid))
-
-		//							if (size > large_file_size)
-		//								large_file_size = 0;
-		//							else
-		//								large_file_size -= size;
-
-		//						large_actual += size;
-
-		//						if (IsTypeExcluded(filename))
-		//						{
-		//							excluded_by_type++;
-		//							effective_excluded_files++;
-		//						}
-		//						else if (directory_excluded)
-		//						{
-		//							effective_excluded_files++;
-		//						}
-		//						else if ((rand() % 20) == 0)
-		//						{
-		//							excluded_files++;
-		//							effective_excluded_files++;
-		//							exfilelist[filename] = 1;
-		//						}
-		//						else
-		//						{
-		//							filename_record += EXS(filename, L":", ex_int_to_string(size), L":", id_ref.AsString());
-		//							current_snapshot_record[justfile] = std::pair < unsigned long long, unsigned long long >(size, 0);
-		//						}
-
-		//						ex_library_progress_handle.main.progress += size;
-
-		//						break;
-		//					}
-
-		//					file_count--;
-		//				}
-
-		//				directory_depth--;
-		//			}
-		//		}
-
-		//		history_file.Write(actual_modified);
-		//		history_file.Write(size);
-		//		history_file.Write(small_actual);
-		//		history_file.Write(medium_actual);
-		//		history_file.Write(large_actual);
-
-		//		files_file.Write(filename_record);
-
-		//		filename_record.ToFile(EXS(path_to_disk, L"file.db"), true);
-
-		//		modified_files.ToFile(EXS(path_to_disk, ex_int_to_string(iteration), L"_modified.db"), true);
-		//	}
-		//
+				db.write((const char*)seed.data(), sizeof(seed));
+				db.write((const char*)id.data(), sizeof(id));
+			}
 		};
 	}
 }

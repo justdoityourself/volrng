@@ -26,9 +26,6 @@
     <ClInclude Include="volrng\vhd_win.hpp">
       <Filter>volrng</Filter>
     </ClInclude>
-    <ClInclude Include="volrng\util.hpp">
-      <Filter>volrng</Filter>
-    </ClInclude>
     <ClInclude Include="volrng\test.hpp">
       <Filter>volrng</Filter>
     </ClInclude>
