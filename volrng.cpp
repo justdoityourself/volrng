@@ -26,16 +26,17 @@ int main(int argc, char* argv[])
 #include <iostream>
 #include <filesystem>
 
-using namespace clipp;
-
 #include "volrng/compat.hpp"
 #include "volrng/volume.hpp"
+
+using namespace clipp;
+using namespace std;
 
 
 int main(int argc, char* argv[])
 {
     bool mount = false, dismount = false, step = false, validate = false;
-    string path = "test", param = volrng::MOUNT;
+    string path = "test", param = string(volrng::MOUNT);
     uint64_t size = 1;
 
     auto cli = (

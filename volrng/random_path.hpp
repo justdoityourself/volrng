@@ -13,6 +13,7 @@ namespace volrng
 	namespace path
 	{
 		using namespace std;
+		using namespace d8u;
 
 		template <size_t S, typename U = uint64_t> class RandomPath
 		{

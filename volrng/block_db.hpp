@@ -17,6 +17,7 @@ namespace volrng
 	namespace blocks
 	{
 		using namespace std;
+		using namespace d8u;
 
 		typedef vector<uint8_t> block;
 		template <size_t S> class Database
