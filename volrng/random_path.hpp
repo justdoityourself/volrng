@@ -26,7 +26,7 @@ namespace volrng
 				: root(_root)
 			{
 				for (size_t i = 1; i < S; i++)
-					data[i] = util::Flip() ? 0 : util::Random();
+					data[i] = random::Flip() ? 0 : random::Integer();
 			}
 
 			seed Seed() { return data; }
@@ -38,9 +38,9 @@ namespace volrng
 				auto result = Build();
 
 				for (size_t i = 0; i < S; i++)
-					data[i] = util::Flip() ? data[i] : (util::Flip() ? 0 : util::Random());
+					data[i] = random::Flip() ? data[i] : (random::Flip() ? 0 : random::Integer());
 
-				data[S - 1] = util::Random();
+				data[S - 1] = random::Integer();
 
 				return result;
 			}
@@ -89,7 +89,7 @@ namespace volrng
 				}
 
 				if(!c)
-					result += '\\' + to_string(util::Random());
+					result += '\\' + to_string(random::Integer());
 
 				return result;
 			}

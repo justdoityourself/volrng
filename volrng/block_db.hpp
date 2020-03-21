@@ -8,7 +8,7 @@
 #include <fstream>
 #include <filesystem>
 
-#include "d8u/util.hpp"
+#include "d8u/random.hpp"
 
 #include "../mio.hpp"
 
@@ -46,7 +46,7 @@ namespace volrng
 
 			block Allocate(size_t size = S)
 			{
-				auto seed = RandomVector<uint64_t>(4);
+				auto seed = random::Vector<uint64_t>(4);
 				block output(S);
 				FactorExpand<uint64_t>(seed, span<uint64_t>((uint64_t*)output.data(),(uint64_t*)(output.data()+S)));
 
@@ -70,7 +70,7 @@ namespace volrng
 				if (!file_map.size())
 					return Allocate();
 
-				auto dx = util::Random(file_map.size() / sizeof(BlockRecord));
+				auto dx = d8u::random::Integer(file_map.size() / sizeof(BlockRecord));
 
 				auto* r = (BlockRecord*)file_map.data();
 				r += dx;

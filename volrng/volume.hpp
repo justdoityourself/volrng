@@ -116,7 +116,7 @@ namespace volrng
 						if (remaining > S)
 							remaining = S;
 
-						buffer = (Random(5) == 0 && remaining ==S) ? (dup += S, block_db.Duplicate()) : block_db.Allocate(remaining);
+						buffer = (d8u::random::Integer(5) == 0 && remaining ==S) ? (dup += S, block_db.Duplicate()) : block_db.Allocate(remaining);
 						file_handle.write((const char*)buffer.data(), buffer.size());
 
 						current += (uint64_t)buffer.size();
@@ -210,7 +210,7 @@ namespace volrng
 				size_t i = 0;
 				while (large_file_size)
 				{
-					if (d8u::util::Flip() && d8u::util::Flip())
+					if (d8u::random::Flip() && d8u::random::Flip())
 						file_update(updaterng, i, (uint8_t*)pdb.data(), small_file_size, medium_file_size, large_file_size, dup);
 					else
 						file_core(pathrng, db, small_file_size, medium_file_size, large_file_size, dup);
@@ -239,7 +239,7 @@ namespace volrng
 				
 				auto step = [](auto& s, auto t)
 				{
-					uint64_t size = Random(t);
+					uint64_t size = d8u::random::Integer(t);
 					if (size > s)
 						size = s;
 					s -= size;
@@ -260,11 +260,24 @@ namespace volrng
 				auto seed = pathrng.Seed();
 				auto path = pathrng.Path();
 				auto file = pathrng.Iterate();
-				filesystem::create_directories(path);
+
+				bool valid_dir = true;
+				try
+				{
+					filesystem::create_directories(path);
+				}
+				catch (...)
+				{
+					//Sometimes the RNG clashes
+					valid_dir = false;
+				}
+
+				if (!valid_dir || std::filesystem::exists(file))
+					return;
 
 				auto step = [](auto& s, auto t)
 				{
-					uint64_t size = Random(t);
+					uint64_t size = d8u::random::Integer(t);
 					if (size > s)
 						size = s;
 					s -= size;

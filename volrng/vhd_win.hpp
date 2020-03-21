@@ -14,7 +14,7 @@
 #pragma comment(lib, "VirtDisk.lib")
 
 #include "d8u/util.hpp"
-
+#include "d8u/string.hpp"
 
 
 namespace volrng
