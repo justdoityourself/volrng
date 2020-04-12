@@ -100,6 +100,41 @@ namespace volrng
 				return true;
 			}
 
+			template <typename F> void Enumerate(F && f)
+			{
+				string n;
+				uint64_t ss;
+				uint64_t ms;
+				uint64_t ls;
+				uint64_t dup;
+
+				{
+					ifstream lf(root + "\\latest");
+					lf >> n;
+				}
+
+				{
+					ifstream meta(root + '\\' + n + ".meta", ios::binary);
+					meta >> ss;
+					meta >> ms;
+					meta >> ls;
+					meta >> dup;
+				}
+
+				mio::mmap_source db(root + '\\' + n + ".db");
+
+				RandomPath<P> pathrng("");
+
+				for (size_t i = 0; i < db.size(); i += sizeof(file_id) + sizeof(RandomPath<P>::seed))
+				{
+					auto pseed = (const RandomPath<P>::seed*)(db.data() + i);
+					auto pid = (const file_id*)(db.data() + i + sizeof(RandomPath<P>::seed));
+
+					pathrng.SetSeed(*pseed);
+					f(pathrng.File(), *pid);
+				}
+			}
+
 		private:
 
 			void CreateFile(string_view file, uint64_t size, file_id& id, uint64_t&dup)
