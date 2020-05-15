@@ -41,7 +41,7 @@ namespace volrng
 
 			block Short()
 			{
-				return Allocate(Random(S));
+				return Allocate(random::Integer(S));
 			}
 
 			block Allocate(size_t size = S)

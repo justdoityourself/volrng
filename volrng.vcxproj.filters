@@ -56,6 +56,9 @@
     <ClInclude Include="volrng\platform.hpp">
       <Filter>volrng</Filter>
     </ClInclude>
+    <ClInclude Include="volrng\iscsi_win.hpp">
+      <Filter>volrng</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />

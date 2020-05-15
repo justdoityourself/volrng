@@ -6,7 +6,6 @@
 
 #include "vhd_win.hpp"
 #include "block_db.hpp"
-#include "util.hpp"
 
 using namespace volrng::win;
 
@@ -21,6 +20,19 @@ using namespace volrng::win;
 
 using namespace volrng::volume;
 using namespace volrng::blocks;
+
+
+
+#ifdef _WIN32
+
+#include "iscsi_win.hpp"
+
+TEST_CASE("ISCSI Client", "[volrng::iscsi]")
+{
+    //volrng::win::ISCSIClient cli("127.0.0.1","3260");
+}
+
+#endif
 
 TEST_CASE("Run test volume", "[volrng::volume]")
 {

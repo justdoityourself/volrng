@@ -15,7 +15,7 @@
 
 #include "d8u/util.hpp"
 #include "d8u/string.hpp"
-
+#include "d8u/cmd.hpp"
 
 namespace volrng
 {
@@ -24,15 +24,6 @@ namespace volrng
 
 	namespace win
 	{
-		void diskpart(string command)
-		{
-			string_as_file("system_command.txt",command);
-
-			system("diskpart /s system_command.txt");
-
-			filesystem::remove("system_command.txt");
-		}
-
 		class VHD
 		{
 		public:

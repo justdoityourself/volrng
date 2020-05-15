@@ -172,13 +172,13 @@ namespace volrng
 				ofstream db(root + '\\' + n + ".db", ofstream::binary);
 				ofstream meta(root + '\\' + n + ".meta", ofstream::binary);
 
-				uint64_t small_file_size = size * small_r;
-				uint64_t medium_file_size = size * medium_r;
-				uint64_t large_file_size = size * large_r;
+				uint64_t small_file_size = (uint64_t)((float)size * small_r);
+				uint64_t medium_file_size = (uint64_t)((float)size * medium_r);
+				uint64_t large_file_size = (uint64_t)((float)size * large_r);
 
-				uint64_t ss = size * small_r;
-				uint64_t ms = size * medium_r;
-				uint64_t ls = size * large_r;
+				uint64_t ss = (uint64_t)((float)size * small_r);
+				uint64_t ms = (uint64_t)((float)size * medium_r);
+				uint64_t ls = (uint64_t)((float)size * large_r);
 
 				RandomPath<P> pathrng(mount);
 
@@ -231,13 +231,13 @@ namespace volrng
 				ofstream db(root + '\\' + n + ".db", ofstream::binary);
 				ofstream meta(root + '\\' + n + ".meta", ofstream::binary);
 
-				uint64_t small_file_size = size * small_r;
-				uint64_t medium_file_size = size * medium_r;
-				uint64_t large_file_size = size * large_r;
+				uint64_t small_file_size = (uint64_t) ((float)size * small_r);
+				uint64_t medium_file_size = (uint64_t) ((float)size * medium_r);
+				uint64_t large_file_size = (uint64_t) ((float)size * large_r);
 
-				ss += size * small_r;
-				ms += size * medium_r;
-				ls += size * large_r;
+				ss += (uint64_t) ((float)size * small_r);
+				ms += (uint64_t) ((float)size * medium_r);
+				ls += (uint64_t) ((float)size * large_r);
 
 				RandomPath<P> pathrng(mount);
 				RandomPath<P> updaterng(mount);
