@@ -38,12 +38,12 @@ namespace volrng
 
 			~Test(){}
 
-			void Run(uint64_t size, string_view mount)
+			std::string Run(uint64_t size, string_view mount)
 			{
 				if (!std::filesystem::exists(string(root) + "/disk.img"))
-					New(size, mount);
+					return New(size, mount);
 				else
-					Iterate(size, mount);
+					return Iterate(size, mount);
 			}
 
 			string Mount(string_view mount)
@@ -161,7 +161,7 @@ namespace volrng
 				id_file(file, id);
 			}
 
-			void New(uint64_t size, string_view mount)
+			std::string New(uint64_t size, string_view mount)
 			{
 				DISK disk(string(root) + "/disk.img", _gb(50), mount);
 				std::this_thread::sleep_for(std::chrono::milliseconds(3000));
@@ -196,9 +196,11 @@ namespace volrng
 					ofstream lf(root + "\\latest");
 					lf << n;
 				}
+
+				return disk.Device();
 			}
 
-			void Iterate(uint64_t size, string_view mount)
+			std::string Iterate(uint64_t size, string_view mount)
 			{
 				DISK disk(string(root) + "/disk.img", _gb(50), mount);
 				std::this_thread::sleep_for(std::chrono::milliseconds(3000));
@@ -260,6 +262,8 @@ namespace volrng
 					ofstream lf(root + "\\latest");
 					lf << n;
 				}
+
+				return disk.Device();
 			}
 
 			void file_update(RandomPath<P>& updaterng, size_t & i, uint8_t* p, uint64_t& small_file_size, uint64_t& medium_file_size, uint64_t& large_file_size, uint64_t& dup)

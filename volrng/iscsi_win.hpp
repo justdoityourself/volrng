@@ -8,12 +8,14 @@
 
 #include "d8u/cmd.hpp"
 #include "d8u/buffer.hpp"
+#include "d8u/string_switch.hpp"
 
 namespace volrng
 {
 	namespace win
 	{
 		using namespace d8u; 
+		using namespace d8u::buffer;
 
 		class ISCSIClient
 		{

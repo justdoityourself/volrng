@@ -193,12 +193,12 @@ namespace volrng
 
 			void Mount(string_view disknumber, string_view driveletter)
 			{
-				return diskpart(string("select disk ") + string(disknumber) + "\nselect partition 1\nassign letter=" + string(driveletter) + "\n");
+				return d8u::diskpart(string("select disk ") + string(disknumber) + "\nselect partition 1\nassign letter=" + string(driveletter) + "\n");
 			}
 
 			void Partition(string_view disknumber, string_view driveletter)
 			{
-				return diskpart(string("select disk ") + string(disknumber) + "\ncreate partition primary\nselect partition 1\nassign letter=" + string(driveletter) + "\nselect volume=" + string(driveletter) + "\nformat quick\n");
+				return d8u::diskpart(string("select disk ") + string(disknumber) + "\ncreate partition primary\nselect partition 1\nassign letter=" + string(driveletter) + "\nselect volume=" + string(driveletter) + "\nformat quick\n");
 			}
 
 			HANDLE hvhd;

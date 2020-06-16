@@ -26,7 +26,7 @@ int main(int argc, char* argv[])
 #include <iostream>
 #include <filesystem>
 
-#include "volrng/compat.hpp"
+#include "volrng/platform.hpp"
 #include "volrng/volume.hpp"
 
 using namespace clipp;
