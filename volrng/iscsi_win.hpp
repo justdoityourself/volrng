@@ -154,6 +154,7 @@ namespace volrng
 
 			static void AddTarget(std::string_view ip, std::string_view name)
 			{
+				cmd("net start MSiSCSI");
 				if(ip.size())
 					cmd(std::string("iscsicli QAddTargetPortal ") + std::string(ip));
 				cmd(std::string("iscsicli QAddTarget ") + std::string(name));
@@ -161,6 +162,7 @@ namespace volrng
 
 			static void Login(std::string_view ip, std::string_view name)
 			{
+				cmd("net start MSiSCSI");
 				if (ip.size())
 					cmd(std::string("iscsicli QAddTargetPortal ") + std::string(ip));
 				cmd(std::string("iscsicli qlogintarget ") + std::string(name));
@@ -168,12 +170,14 @@ namespace volrng
 
 			static void DirectLogin(std::string_view name, std::string_view ip)
 			{
+				cmd("net start MSiSCSI");
 				cmd(std::string("iscsicli qaddtarget ") + std::string(name) + " " + std::string(ip));
 				cmd(std::string("iscsicli qlogintarget ") + std::string(name));
 			}
 
 			static void Logout(std::string_view ip, std::string_view session)
 			{
+				cmd("net start MSiSCSI");
 				if (ip.size())
 					cmd(std::string("iscsicli QAddTargetPortal ") + std::string(ip));
 				cmd(std::string("iscsicli logouttarget ") + std::string(session));
@@ -181,6 +185,7 @@ namespace volrng
 
 			static void ResetPortal(std::string_view ip)
 			{
+				cmd("net start MSiSCSI");
 				cmd(std::string("iscsicli RefreshTargetPortal ") + std::string(ip) + " 3260");
 			}
 
