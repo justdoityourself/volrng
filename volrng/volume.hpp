@@ -26,7 +26,7 @@ namespace volrng
 	{
 		using namespace std;
 
-		template <typename DISK, size_t S = _kb(256),size_t D = _gb(50), size_t P = 5> class Test
+		template <typename DISK, size_t S = _kb(256),size_t DISK_SIZE = _gb(50), size_t P = 5> class Test
 		{
 			string root;
 			Database<S> block_db;
@@ -163,7 +163,7 @@ namespace volrng
 
 			std::string New(uint64_t size, string_view mount)
 			{
-				DISK disk(string(root) + "/disk.img", _gb(50), mount);
+				DISK disk(string(root) + "/disk.img", DISK_SIZE, mount);
 				std::this_thread::sleep_for(std::chrono::milliseconds(3000));
 
 				float small_r = 0.55f, medium_r = 0.25f, large_r = 0.2f;
@@ -202,7 +202,7 @@ namespace volrng
 
 			std::string Iterate(uint64_t size, string_view mount)
 			{
-				DISK disk(string(root) + "/disk.img", _gb(50), mount);
+				DISK disk(string(root) + "/disk.img", DISK_SIZE, mount);
 				std::this_thread::sleep_for(std::chrono::milliseconds(3000));
 
 				float small_r = 0.55f, medium_r = 0.25f, large_r = 0.2f;
